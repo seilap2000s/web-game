@@ -165,9 +165,28 @@ button {
 }
 
 .tagline {
-  margin: 0 0 18px;
+  margin: 0 0 10px;
   font-size: 18px;
   font-weight: 700;
+}
+
+.worker-card {
+  margin: 0 auto 12px;
+  width: min(112px, 30vw);
+  padding: 5px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px #000;
+  flex: 0 1 auto;
+}
+
+.worker-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
 }
 
 .howto {
@@ -404,7 +423,8 @@ button {
 .gauge-fake[hidden],
 .judge[hidden],
 .copy-status[hidden],
-.share-box[hidden] {
+.share-box[hidden],
+.worker-card[hidden] {
   display: none !important;
 }
 
@@ -640,6 +660,10 @@ button {
       0 30px 80px rgba(0, 0, 0, 0.55),
       inset 0 0 0 1px #000;
   }
+
+  .worker-card {
+    width: 128px;
+  }
 }
 
 @media (max-height: 680px) {
@@ -652,6 +676,12 @@ button {
     padding: 8px 12px 8px 28px;
     font-size: 13px;
     line-height: 1.5;
+  }
+
+  .worker-card {
+    width: min(72px, 20vw);
+    margin-bottom: 8px;
+    padding: 3px;
   }
 
   .stop-btn,

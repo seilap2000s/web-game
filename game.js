@@ -463,6 +463,7 @@
     state.running = false;
     state.inputLocked = true;
     cancelAnimationFrame(state.raf);
+    clearTimer("blackout");
 
     const elapsed = Math.max(0, (now() - state.startedAt) / 1000);
     const pos =
@@ -668,6 +669,15 @@
       if (document.hidden) pauseForBackground();
       else resumeFromBackground();
     });
+    const workerCard = document.getElementById("worker-card");
+    const workerImg = workerCard && workerCard.querySelector("img");
+    if (workerCard && workerImg) {
+      const hideArt = () => {
+        workerCard.hidden = true;
+      };
+      workerImg.addEventListener("error", hideArt);
+      if (workerImg.complete && workerImg.naturalWidth === 0) hideArt();
+    }
   }
 
   boot();
