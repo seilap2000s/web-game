@@ -442,14 +442,14 @@
     el.resultTitle.textContent = title;
     el.resultScore.textContent = String(state.score);
     el.resultHigh.textContent = String(nextHigh);
-    el.resultCombo.textContent = String(state.maxCombo);
+    el.resultCombo.textContent = `${state.maxCombo}連続`;
     el.resultPerfect.textContent = String(state.perfects);
     el.newBest.classList.toggle("is-hidden", !isBest);
     el.copyStatus.hidden = true;
     state.lastShare = [
       "【ギリギリ株式会社】勤務結果",
       `SCORE ${state.score}  称号: ${title}`,
-      `最高コンボ ${state.maxCombo} / PERFECT ${state.perfects}`,
+      `最高連続 ${state.maxCombo} / PERFECT ${state.perfects}`,
       "今日もギリギリ。",
     ].join("\n");
     el.titleHigh.textContent = String(nextHigh);

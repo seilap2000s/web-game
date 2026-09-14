@@ -511,6 +511,13 @@ button {
   display: grid;
   gap: 10px;
   margin-top: auto;
+  flex-shrink: 0;
+}
+
+.stop-btn,
+.stop-btn-play,
+.ghost-btn {
+  flex-shrink: 0;
 }
 
 .ghost-btn {
@@ -629,6 +636,32 @@ button {
 
   .mission-title {
     font-size: 26px;
+  }
+
+  .result-title {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .sheet {
+    margin-bottom: 10px;
+  }
+
+  .sheet > div {
+    padding: 8px 12px;
+  }
+
+  .sheet dd {
+    font-size: 18px;
+  }
+
+  .ghost-btn {
+    min-height: 48px;
+  }
+
+  .panel {
+    padding-top: 12px;
+    padding-bottom: 12px;
   }
 }
 
