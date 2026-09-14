@@ -365,13 +365,15 @@ button {
 }
 
 .gauge-fake span {
+  top: auto;
+  bottom: -18px;
   color: var(--warn);
 }
 
 .gauge-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 18px;
+  margin-top: 22px;
   font-size: 11px;
   letter-spacing: 0.18em;
   color: #8a847a;
