@@ -367,13 +367,16 @@ button {
 .gauge-fake span {
   top: auto;
   bottom: -18px;
+  left: auto;
+  right: 50%;
+  transform: translateX(-4px);
   color: var(--warn);
 }
 
 .gauge-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 22px;
+  margin-top: 26px;
   font-size: 11px;
   letter-spacing: 0.18em;
   color: #8a847a;
