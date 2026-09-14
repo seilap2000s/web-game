@@ -403,7 +403,8 @@ button {
 .blackout[hidden],
 .gauge-fake[hidden],
 .judge[hidden],
-.copy-status[hidden] {
+.copy-status[hidden],
+.share-box[hidden] {
   display: none !important;
 }
 
@@ -541,6 +542,28 @@ button {
   color: var(--gold);
 }
 
+.copy-status.is-fail {
+  color: var(--paper-dim);
+}
+
+.share-box {
+  display: block;
+  width: 100%;
+  min-height: 72px;
+  max-height: 96px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: #0e0e10;
+  color: var(--paper);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 @keyframes shake {
   0%,
   100% {
@@ -660,6 +683,12 @@ button {
 
   .ghost-btn {
     min-height: 48px;
+  }
+
+  .share-box {
+    min-height: 56px;
+    max-height: 72px;
+    font-size: 12px;
   }
 
   .panel {

@@ -139,6 +139,7 @@
     resultPerfect: document.getElementById("result-perfect"),
     newBest: document.getElementById("new-best"),
     copyStatus: document.getElementById("copy-status"),
+    shareBox: document.getElementById("share-box"),
     terminalNo: document.getElementById("terminalNo"),
   };
 
@@ -160,6 +161,83 @@
     outCount: 0,
     lastShare: "",
   };
+
+  const timers = {
+    ready: null,
+    judge: null,
+    blackout: null,
+  };
+
+  function now() {
+    return performance.now();
+  }
+
+  function clearTimer(name) {
+    const t = timers[name];
+    if (!t) return;
+    if (t.id) window.clearTimeout(t.id);
+    timers[name] = null;
+  }
+
+  function clearAllTimers() {
+    Object.keys(timers).forEach(clearTimer);
+  }
+
+  function scheduleTimer(name, delay, fn) {
+    clearTimer(name);
+    const entry = {
+      fn,
+      remaining: Math.max(0, delay),
+      started: now(),
+      id: 0,
+    };
+    timers[name] = entry;
+    if (state.hiddenAt) return;
+    entry.id = window.setTimeout(() => {
+      timers[name] = null;
+      fn();
+    }, entry.remaining);
+  }
+
+  function pauseForBackground() {
+    if (state.hiddenAt) return;
+    state.hiddenAt = now();
+    if (state.raf) {
+      cancelAnimationFrame(state.raf);
+      state.raf = 0;
+    }
+    Object.keys(timers).forEach((name) => {
+      const t = timers[name];
+      if (!t) return;
+      if (t.id) {
+        window.clearTimeout(t.id);
+        t.id = 0;
+      }
+      t.remaining = Math.max(0, t.remaining - (state.hiddenAt - t.started));
+    });
+  }
+
+  function resumeFromBackground() {
+    const hiddenAt = state.hiddenAt;
+    state.hiddenAt = 0;
+    if (!hiddenAt) return;
+    const hiddenFor = Math.max(0, now() - hiddenAt);
+    if (state.running) {
+      state.startedAt += hiddenFor;
+    }
+    Object.keys(timers).forEach((name) => {
+      const t = timers[name];
+      if (!t) return;
+      t.started = now();
+      t.id = window.setTimeout(() => {
+        timers[name] = null;
+        t.fn();
+      }, t.remaining);
+    });
+    if (state.running && state.screen === "play") {
+      state.raf = requestAnimationFrame(tick);
+    }
+  }
 
   function clamp(n, min, max) {
     return Math.max(min, Math.min(max, n));
@@ -304,6 +382,8 @@
 
   function startGame() {
     cancelAnimationFrame(state.raf);
+    clearAllTimers();
+    hideManualShare();
     state.gen += 1;
     state.roundIndex = 0;
     state.score = 0;
@@ -311,12 +391,14 @@
     state.maxCombo = 0;
     state.perfects = 0;
     state.outCount = 0;
+    state.running = false;
     showScreen("play");
     startRound();
   }
 
   function startRound() {
     cancelAnimationFrame(state.raf);
+    clearTimer("blackout");
     clearFx();
     state.round = makeRound(state.roundIndex);
     state.running = false;
@@ -333,20 +415,20 @@
     updateHud();
 
     const gen = state.gen;
-    window.setTimeout(() => {
+    scheduleTimer("ready", state.roundIndex === 0 ? 700 : 480, () => {
       if (state.gen !== gen || state.screen !== "play") return;
       state.inputLocked = false;
       state.running = true;
-      state.startedAt = performance.now();
+      state.startedAt = now();
       el.playBtn.disabled = false;
       el.playBtn.textContent = "STOP!";
       state.raf = requestAnimationFrame(tick);
-    }, state.roundIndex === 0 ? 700 : 480);
+    });
   }
 
-  function tick(now) {
-    if (!state.running) return;
-    const elapsed = (now - state.startedAt) / 1000;
+  function tick(frameNow) {
+    if (!state.running || state.hiddenAt) return;
+    const elapsed = Math.max(0, (frameNow - state.startedAt) / 1000);
     const pos = positionAt(elapsed, state.round);
     setGauge(pos);
 
@@ -362,11 +444,11 @@
       el.gaugeBlock.classList.add("is-blackout");
       el.blackout.hidden = false;
       const gen = state.gen;
-      window.setTimeout(() => {
+      scheduleTimer("blackout", REDUCE_MOTION ? 280 : state.round.blackoutMs, () => {
         if (state.gen !== gen || !state.running) return;
         el.gaugeBlock.classList.remove("is-blackout");
         el.blackout.hidden = true;
-      }, REDUCE_MOTION ? 280 : state.round.blackoutMs);
+      });
     }
 
     if (pos >= 1) {
@@ -382,7 +464,7 @@
     state.inputLocked = true;
     cancelAnimationFrame(state.raf);
 
-    const elapsed = (performance.now() - state.startedAt) / 1000;
+    const elapsed = Math.max(0, (now() - state.startedAt) / 1000);
     const pos =
       forcedPos == null ? clamp(positionAt(elapsed, state.round), 0, 1) : forcedPos;
     const spd = Math.abs(velocityAt(elapsed, state.round));
@@ -419,7 +501,7 @@
     el.playBtn.disabled = true;
 
     const gen = state.gen;
-    window.setTimeout(() => {
+    scheduleTimer("judge", 820, () => {
       if (state.gen !== gen) return;
       el.cabinet.classList.remove("is-shake", "is-flash", "is-hot");
       if (state.roundIndex >= TOTAL_ROUNDS - 1) {
@@ -428,7 +510,7 @@
       }
       state.roundIndex += 1;
       startRound();
-    }, 820);
+    });
   }
 
   function finishGame() {
@@ -445,6 +527,7 @@
     el.resultCombo.textContent = `${state.maxCombo}連続`;
     el.resultPerfect.textContent = String(state.perfects);
     el.newBest.classList.toggle("is-hidden", !isBest);
+    hideManualShare();
     el.copyStatus.hidden = true;
     state.lastShare = [
       "【ギリギリ株式会社】勤務結果",
@@ -461,28 +544,64 @@
     startGame();
   }
 
+  function hideManualShare() {
+    if (!el.shareBox) return;
+    el.shareBox.hidden = true;
+    el.shareBox.value = "";
+    el.copyStatus.classList.remove("is-fail");
+  }
+
+  function showManualShare(text) {
+    el.copyStatus.hidden = false;
+    el.copyStatus.classList.add("is-fail");
+    el.copyStatus.textContent = "コピー失敗。下の文を長押しして選択してください。";
+    el.shareBox.hidden = false;
+    el.shareBox.value = text;
+    el.shareBox.focus();
+    el.shareBox.select();
+  }
+
+  function showCopySuccess() {
+    hideManualShare();
+    el.copyStatus.hidden = false;
+    el.copyStatus.textContent = "コピーした。貼って共有せよ。";
+  }
+
+  function fallbackCopy(text) {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(area);
+    return ok === true;
+  }
+
   async function copyResult() {
     const text = state.lastShare || "【ギリギリ株式会社】";
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(text);
-      } else {
-        const area = document.createElement("textarea");
-        area.value = text;
-        area.setAttribute("readonly", "");
-        area.style.position = "fixed";
-        area.style.left = "-9999px";
-        document.body.appendChild(area);
-        area.select();
-        document.execCommand("copy");
-        document.body.removeChild(area);
+        showCopySuccess();
+        return;
       }
-      el.copyStatus.hidden = false;
-      el.copyStatus.textContent = "コピーした。貼って共有せよ。";
     } catch {
-      el.copyStatus.hidden = false;
-      el.copyStatus.textContent = "コピー失敗。長押しで選択してください。";
+      /* use fallback */
     }
+    let copied = false;
+    try {
+      copied = fallbackCopy(text);
+    } catch {
+      copied = false;
+    }
+    if (copied) {
+      showCopySuccess();
+      return;
+    }
+    showManualShare(text);
   }
 
   function onPrimary(fromCopy) {
@@ -526,6 +645,7 @@
     document.addEventListener("keydown", (event) => {
       if (event.repeat) return;
       if (event.code !== "Space" && event.code !== "Enter") return;
+      if (event.target && event.target.tagName === "TEXTAREA") return;
       event.preventDefault();
       if (state.screen === "result" && event.code === "Enter" && document.activeElement === el.copyBtn) {
         copyResult();
@@ -545,13 +665,8 @@
       setLine(el.fake, state.round.fake, state.round.special !== "fake");
     });
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        state.hiddenAt = performance.now();
-        return;
-      }
-      if (!state.running || !state.hiddenAt) return;
-      state.startedAt += performance.now() - state.hiddenAt;
-      state.hiddenAt = 0;
+      if (document.hidden) pauseForBackground();
+      else resumeFromBackground();
     });
   }
 
