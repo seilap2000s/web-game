@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0d">
+  <meta name="description" content="危険ラインの直前で止めろ。ワンタップで遊べるブラウザゲーム『ギリギリ株式会社』。">
+  <title>ギリギリ株式会社</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app" id="app">
+    <section class="screen screen-start is-active" id="start-screen" aria-labelledby="game-title">
+      <div class="brand-chip">BROWSER GAME / ONE TAP</div>
+      <h1 id="game-title"><span>ギリギリ</span>株式会社</h1>
+      <p class="tagline">危険ラインの直前で止めろ。<br>攻めるほど、評価は上がる。</p>
+
+      <div class="demo-meter" aria-hidden="true">
+        <div class="demo-fill"></div>
+        <div class="demo-danger"></div>
+        <div class="demo-cursor"></div>
+      </div>
+
+      <div class="start-copy">
+        <p>10ラウンドの査定。</p>
+        <p>ライン越えは <strong>OUT</strong>。でも攻めない社員に未来はない。</p>
+      </div>
+
+      <button class="primary-button" id="start-button" type="button">出社する</button>
+      <p class="hint">PC: Space / EnterでもSTOP</p>
+    </section>
+
+    <section class="screen screen-game" id="game-screen" aria-live="polite">
+      <header class="game-header">
+        <div>
+          <span class="eyebrow">ROUND</span>
+          <strong id="round-label">01 / 10</strong>
+        </div>
+        <div class="score-box">
+          <span class="eyebrow">SCORE</span>
+          <strong id="score-label">0</strong>
+        </div>
+      </header>
+
+      <section class="briefing-card" id="briefing-card">
+        <div class="briefing-topline">
+          <span id="round-mode-label">通常勤務</span>
+          <span id="combo-label">COMBO x1</span>
+        </div>
+        <h2 id="round-title">限界まで攻めろ</h2>
+        <p id="round-copy">危険ラインの直前でSTOP。</p>
+      </section>
+
+      <section class="meter-zone" id="meter-zone" aria-label="判定ゲージ">
+        <div class="meter-grid" aria-hidden="true"></div>
+        <div class="danger-band" id="danger-band" aria-hidden="true"></div>
+        <div class="fake-danger-band" id="fake-danger-band" aria-hidden="true"></div>
+        <div class="meter-fill" id="meter-fill" aria-hidden="true"></div>
+        <div class="meter-runner" id="meter-runner" aria-hidden="true">
+          <span></span>
+        </div>
+        <div class="meter-label safe-label">SAFE</div>
+        <div class="meter-label danger-label">OUT</div>
+        <div class="blackout" id="blackout" aria-hidden="true"><span>画面共有中...</span></div>
+      </section>
+
+      <div class="judgement-area" aria-live="assertive">
+        <div class="judgement" id="judgement">READY</div>
+        <div class="judgement-score" id="judgement-score">&nbsp;</div>
+      </div>
+
+      <button class="stop-button" id="stop-button" type="button" disabled>
+        <span>STOP!</span>
+        <small>ここで止める</small>
+      </button>
+
+      <div class="round-progress" id="round-progress" aria-hidden="true"></div>
+    </section>
+
+    <section class="screen screen-result" id="result-screen" aria-labelledby="result-title">
+      <p class="eyebrow">PERSONNEL REVIEW</p>
+      <h2 id="result-title">査定結果</h2>
+
+      <div class="rank-card">
+        <span class="rank-label">あなたの称号</span>
+        <strong id="rank-title">攻める一般社員</strong>
+        <p id="rank-copy">無難と無茶のあいだを歩く人。</p>
+      </div>
+
+      <div class="result-score">
+        <span>TOTAL SCORE</span>
+        <strong id="final-score">0</strong>
+        <small id="high-score-note">HIGH SCORE 0</small>
+      </div>
+
+      <div class="result-grid">
+        <div><span>PERFECT</span><strong id="perfect-count">0</strong></div>
+        <div><span>BEST COMBO</span><strong id="best-combo">0</strong></div>
+        <div><span>OUT</span><strong id="out-count">0</strong></div>
+      </div>
+
+      <div class="result-actions">
+        <button class="primary-button" id="retry-button" type="button">もう一度出社</button>
+        <button class="secondary-button" id="copy-button" type="button">結果をコピー</button>
+      </div>
+      <p class="copy-status" id="copy-status" role="status"></p>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
